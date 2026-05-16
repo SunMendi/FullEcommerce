@@ -1,6 +1,6 @@
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
-from .models import Category
+from .models import Category,Product
 
 def create_category(category_data: dict) -> Category:
     """
@@ -28,3 +28,12 @@ def get_all_category():
 
     except Exception as e:
         raise Exception(f"{str(e)}")
+    
+def create_product(validated_data: dict)->Product:
+    try:
+        product=Product.objects.create(**validated_data)
+        return product 
+    except IntegrityError as e:
+        raise ValueError(f"Database integrity error: {str(e)}")
+    except Exception as e:
+        raise Exception(f"An unexpected error occurred: {str(e)}")

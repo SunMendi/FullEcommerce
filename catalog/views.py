@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import CreateCategorySerializer, ResponseCategorySerializer
-from .services import create_category, get_all_category
+from .serializers import CreateCategorySerializer, ResponseCategorySerializer,CreateProductSerializer
+from .services import create_category, get_all_category,create_product
 
 
 class ListCreateView(APIView):
@@ -53,4 +53,25 @@ class ListCreateView(APIView):
             )
         except Exception as e:
             # 4. Handle unexpected System errors
+            return Response({"error": "An internal server error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ListCreateProductView(APIView):
+    def post(self, request):
+        serializer=CreateProductSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            product=create_product(serializer.validated_data)
+            return Response(
+                {
+                    "data":product.data,
+                },
+                status=status.HTTP_201_CREATED
+            )
+        except ValueError as e:
+            # 4. Handle expected Business/Database errors (Status 400)
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
+        except Exception as e:
+            # 5. Handle unexpected System errors (Status 500)
             return Response({"error": "An internal server error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
