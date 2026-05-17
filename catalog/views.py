@@ -2,10 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import CreateCategorySerializer, ResponseCategorySerializer,CreateProductSerializer
-from .services import create_category, get_all_category,create_product
+from .services import create_category, get_all_category,create_product,get_category
 
 
-class ListCreateView(APIView):
+class ListCreateCategoryView(APIView):
     def post(self, request):
         # 1. Initialize and Validate data using the Serializer
         serializer = CreateCategorySerializer(data=request.data) 
@@ -54,6 +54,19 @@ class ListCreateView(APIView):
         except Exception as e:
             # 4. Handle unexpected System errors
             return Response({"error": "An internal server error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class DetailCategoryView(APIView):
+    def get(self, request):
+        id=request.Get.get("id")
+        try:
+            category=get_category(id)
+            return Response(
+                {}
+            )
+        except
+
+
+
 
 
 class ListCreateProductView(APIView):

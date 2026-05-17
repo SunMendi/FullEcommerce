@@ -37,3 +37,13 @@ def create_product(validated_data: dict)->Product:
         raise ValueError(f"Database integrity error: {str(e)}")
     except Exception as e:
         raise Exception(f"An unexpected error occurred: {str(e)}")
+    
+
+def get_category(id:int)->Category:
+    try:
+        category=Category.objects.get(id)
+        return category 
+    except ObjectDoesNotExist as e:
+        raise LookupError("value does not exist: {str(e)}")
+    except Exception as e:
+        raise Exception(f"an unexpected error occured: {str(e)}")
