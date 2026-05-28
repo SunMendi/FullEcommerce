@@ -1,6 +1,30 @@
 from django.urls import path 
-
+from .views import ListCreateCategoryView, DetailCategoryView, ListCreateProductView, PublicProductListView, PublicProductDetailView, PublicCategoryListView, PublicCategoryDetailView, ProductReviewListView, ProductReviewCreateView, ProductReviewDetailView, CategoryManageView, CategoryDetailManageView, ProductDetailManageView, AdminProductReviewView
 
 urlpatterns = [
-    path('category/',)
+    path('category/', ListCreateCategoryView.as_view(), name='category-list-create'),
+    path('category/detail/', DetailCategoryView.as_view(), name='category-detail'),
+    path('category/<int:id>', CategoryDetailManageView.as_view(), name='category-manage'),
+    path('category/<int:id>/', CategoryDetailManageView.as_view(), name='category-manage-slash'),
+    path('category/<slug:slug>', CategoryManageView.as_view(), name='category-detail-by-slug'),
+    path('category/<slug:slug>/', CategoryManageView.as_view(), name='category-detail-by-slug-slash'),
+    path('product/', ListCreateProductView.as_view(), name='product-list-create'),
+    path('product/<int:id>', ProductDetailManageView.as_view(), name='product-manage'),
+    path('product/<int:id>/', ProductDetailManageView.as_view(), name='product-manage-slash'),
+    path('products', PublicProductListView.as_view(), name='public-product-list'),
+    path('products/', PublicProductListView.as_view(), name='public-product-list-slash'),
+    path('products/<int:id>/reviews', ProductReviewCreateView.as_view(), name='product-review-create'),
+    path('products/<int:id>/reviews/', ProductReviewCreateView.as_view(), name='product-review-create-slash'),
+    path('products/<slug:slug>/reviews', ProductReviewListView.as_view(), name='product-review-list'),
+    path('products/<slug:slug>/reviews/', ProductReviewListView.as_view(), name='product-review-list-slash'),
+    path('products/<slug:slug>', PublicProductDetailView.as_view(), name='public-product-detail'),
+    path('products/<slug:slug>/', PublicProductDetailView.as_view(), name='public-product-detail-slash'),
+    path('reviews/<int:id>', ProductReviewDetailView.as_view(), name='product-review-detail'),
+    path('reviews/<int:id>/', ProductReviewDetailView.as_view(), name='product-review-detail-slash'),
+    path('admin/reviews/<int:id>', AdminProductReviewView.as_view(), name='admin-review-update'),
+    path('admin/reviews/<int:id>/', AdminProductReviewView.as_view(), name='admin-review-update-slash'),
+    path('categories', PublicCategoryListView.as_view(), name='public-category-list'),
+    path('categories/', PublicCategoryListView.as_view(), name='public-category-list-slash'),
+    path('categories/<slug:slug>', PublicCategoryDetailView.as_view(), name='public-category-detail'),
+    path('categories/<slug:slug>/', PublicCategoryDetailView.as_view(), name='public-category-detail-slash'),
 ]

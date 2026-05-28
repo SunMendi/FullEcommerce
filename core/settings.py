@@ -10,10 +10,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os 
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,7 +30,7 @@ SECRET_KEY = 'django-insecure-7p(*&rq6l!fzits5(^iotcjd-e-&sd$%itwd&vm%-20w^*v=cy
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -39,6 +44,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'catalog',
     'users',
+    'bots',
+    'cart',
+    'orders',
 ]
 
 MIDDLEWARE = [
@@ -76,8 +84,12 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASS'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -118,3 +130,23 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 AUTH_USER_MODEL='users.User'
+
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_RATES': {
+        'checkout': '10/hour',
+        'order_track': '30/hour',
+    }
+}
+
+# Facebook Webhook Verification Token (invented by us for development handshake)
+FACEBOOK_VERIFY_TOKEN = 'my_learning_bot_verify_token_2026'
+
+import cloudinary
+
+# Cloudinary Configuration
+cloudinary.config(
+    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME', 'your_cloud_name'),
+    api_key = os.environ.get('CLOUDINARY_API_KEY', 'your_api_key'),
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET', 'your_api_secret'),
+    secure = True
+)
