@@ -52,7 +52,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='category',
             name='slug',
-            field=models.SlugField(blank=True, max_length=80, null=True),
+            field=models.SlugField(blank=True, max_length=80, unique=True, null=True),
         ),
         migrations.AddField(
             model_name='product',
@@ -67,17 +67,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='product',
             name='slug',
-            field=models.SlugField(blank=True, max_length=80, null=True),
+            field=models.SlugField(blank=True, max_length=80, unique=True, null=True),
         ),
         migrations.RunPython(populate_slugs, migrations.RunPython.noop),
-        migrations.AlterField(
-            model_name='category',
-            name='slug',
-            field=models.SlugField(blank=True, max_length=80, unique=True),
-        ),
-        migrations.AlterField(
-            model_name='product',
-            name='slug',
-            field=models.SlugField(blank=True, max_length=80, unique=True),
-        ),
     ]
+
