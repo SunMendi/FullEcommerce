@@ -18,8 +18,10 @@ import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load environment variables from .env file
-load_dotenv(os.path.join(BASE_DIR, '.env'))
+# Load local environment variables. Railway provides real environment
+# variables directly, so this mainly helps local development.
+load_dotenv(BASE_DIR.parent / '.env')
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -156,6 +158,11 @@ STORAGES = {
 AUTH_USER_MODEL='users.User'
 
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
     'DEFAULT_THROTTLE_RATES': {
         'checkout': '10/hour',
         'order_track': '30/hour',
