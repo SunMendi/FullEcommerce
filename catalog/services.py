@@ -1,8 +1,36 @@
-from django.db import IntegrityError
+from django.db import DataError, IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, Avg
 from .models import Category,Product,ProductReview
+import cloudinary
+import cloudinary.exceptions
 import cloudinary.uploader
+
+
+def upload_image_to_cloudinary(image_file) -> str:
+    config = cloudinary.config()
+    missing_config = (
+        not config.cloud_name or config.cloud_name == 'your_cloud_name' or
+        not config.api_key or config.api_key == 'your_api_key' or
+        not config.api_secret or config.api_secret == 'your_api_secret'
+    )
+
+    if missing_config:
+        raise ValueError(
+            "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, "
+            "CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET."
+        )
+
+    try:
+        upload_result = cloudinary.uploader.upload(image_file)
+    except cloudinary.exceptions.Error as e:
+        raise ValueError(f"Image upload failed: {str(e)}")
+
+    secure_url = upload_result.get('secure_url')
+    if not secure_url:
+        raise ValueError("Image upload failed. Cloudinary did not return a secure URL.")
+
+    return secure_url
 
 def create_category(category_data: dict) -> Category:
     """
@@ -12,8 +40,7 @@ def create_category(category_data: dict) -> Category:
         # If 'image' is an uploaded file, upload it to Cloudinary first
         image_file = category_data.get('image')
         if image_file and not isinstance(image_file, str):
-            upload_result = cloudinary.uploader.upload(image_file)
-            category_data['image'] = upload_result.get('secure_url')
+            category_data['image'] = upload_image_to_cloudinary(image_file)
 
         category = Category.objects.create(**category_data)
         return category
@@ -22,7 +49,8 @@ def create_category(category_data: dict) -> Category:
         # Catch database constraints (e.g., unique violations)
         # We raise a ValueError so the View can catch it and return a 400 status.
         raise ValueError(f"Database error while creating category: {str(e)}")
-        
+    except ValueError:
+        raise
     except Exception as e:
         # Catch any other unexpected system errors
         raise Exception(f"An unexpected error occurred: {str(e)}")
@@ -44,16 +72,14 @@ def create_product(validated_data: dict)->Product:
         # If 'image' is an uploaded file, upload it to Cloudinary first
         image_file = validated_data.get('image')
         if image_file and not isinstance(image_file, str):
-            upload_result = cloudinary.uploader.upload(image_file)
-            secure_url = upload_result.get('secure_url')
-            if not secure_url:
-                raise ValueError("Image upload failed. Cloudinary did not return a secure URL.")
-            validated_data['image'] = secure_url
+            validated_data['image'] = upload_image_to_cloudinary(image_file)
 
         product=Product.objects.create(**validated_data)
         return product 
     except IntegrityError as e:
         raise ValueError(f"Database integrity error: {str(e)}")
+    except DataError as e:
+        raise ValueError(f"Database error while creating product: {str(e)}")
     except ValueError:
         raise
     except Exception as e:
@@ -76,8 +102,7 @@ def update_category(category_id: int, validated_data: dict) -> Category:
 
         image_file = validated_data.get('image')
         if image_file and not isinstance(image_file, str):
-            upload_result = cloudinary.uploader.upload(image_file)
-            validated_data['image'] = upload_result.get('secure_url')
+            validated_data['image'] = upload_image_to_cloudinary(image_file)
 
         for field, value in validated_data.items():
             setattr(category, field, value)
@@ -88,6 +113,8 @@ def update_category(category_id: int, validated_data: dict) -> Category:
         raise LookupError(f"Category with ID {category_id} does not exist.")
     except IntegrityError as e:
         raise ValueError(f"Database error while updating category: {str(e)}")
+    except ValueError:
+        raise
     except Exception as e:
         raise Exception(f"An unexpected error occurred: {str(e)}")
 
@@ -154,11 +181,7 @@ def update_product(product_id: int, validated_data: dict) -> Product:
 
         image_file = validated_data.get('image')
         if image_file and not isinstance(image_file, str):
-            upload_result = cloudinary.uploader.upload(image_file)
-            secure_url = upload_result.get('secure_url')
-            if not secure_url:
-                raise ValueError("Image upload failed. Cloudinary did not return a secure URL.")
-            validated_data['image'] = secure_url
+            validated_data['image'] = upload_image_to_cloudinary(image_file)
 
         for field, value in validated_data.items():
             setattr(product, field, value)
@@ -168,6 +191,8 @@ def update_product(product_id: int, validated_data: dict) -> Product:
     except ObjectDoesNotExist:
         raise LookupError(f"Product with ID {product_id} does not exist.")
     except IntegrityError as e:
+        raise ValueError(f"Database error while updating product: {str(e)}")
+    except DataError as e:
         raise ValueError(f"Database error while updating product: {str(e)}")
     except ValueError:
         raise

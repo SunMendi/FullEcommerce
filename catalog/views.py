@@ -5,6 +5,10 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .serializers import CreateCategorySerializer, ResponseCategorySerializer, CreateProductSerializer, ResponseProductSerializer, CreateProductReviewSerializer, ResponseProductReviewSerializer, AdminReviewUpdateSerializer
 from .services import create_category, get_all_category, create_product, get_category, get_public_products, get_public_product_by_slug, get_public_categories, get_public_category_by_slug, get_product_reviews_by_slug, create_product_review, delete_product_review, update_category, delete_category, update_product, delete_product, get_product_reviews_by_id, update_review_approval
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class ListCreateCategoryView(APIView):
@@ -42,6 +46,7 @@ class ListCreateCategoryView(APIView):
             
         except Exception as e:
             # 5. Handle unexpected System errors (Status 500)
+            logger.exception("Unexpected error while creating category")
             return Response({"error": "An internal server error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     def get(self, request):
@@ -82,6 +87,7 @@ class DetailCategoryView(APIView):
         except LookupError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
+            logger.exception("Unexpected error while fetching category detail")
             return Response({"error": "An internal server error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -171,6 +177,7 @@ class ListCreateProductView(APIView):
             
         except Exception as e:
             # 5. Handle unexpected System errors (Status 500)
+            logger.exception("Unexpected error while creating product")
             return Response({"error": "An internal server error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -197,6 +204,7 @@ class ProductDetailManageView(APIView):
         except LookupError as e:
             return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
+            logger.exception("Unexpected error while updating product")
             return Response({"error": "An internal server error occurred"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, id):

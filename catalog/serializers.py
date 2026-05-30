@@ -30,7 +30,7 @@ class CreateProductSerializer(serializers.Serializer):
     category=serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
 
     def validate(self, attrs):
-        if not attrs.get('image') and not attrs.get('image_url'):
+        if not self.partial and not attrs.get('image') and not attrs.get('image_url'):
             raise serializers.ValidationError("Either image or image_url is required.")
         return attrs
 

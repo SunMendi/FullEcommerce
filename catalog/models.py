@@ -6,7 +6,7 @@ from django.utils.text import slugify
 class Category(models.Model):
     name =models.CharField(blank=False, max_length=40)
     slug=models.SlugField(max_length=80, unique=True, blank=True)
-    image=models.URLField()
+    image=models.URLField(max_length=1000)
     active=models.BooleanField(default=True)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
@@ -31,7 +31,7 @@ class Category(models.Model):
 class Product(models.Model):
     name=models.CharField(blank=False, max_length=40)
     slug=models.SlugField(max_length=80, unique=True, blank=True)
-    image=models.URLField(blank=False)
+    image=models.URLField(max_length=1000, blank=False)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.IntegerField(default=0)
