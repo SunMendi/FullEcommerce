@@ -37,16 +37,25 @@ def get_all_category():
     
 def create_product(validated_data: dict)->Product:
     try:
+        image_url = validated_data.pop('image_url', None)
+        if image_url:
+            validated_data['image'] = image_url
+
         # If 'image' is an uploaded file, upload it to Cloudinary first
         image_file = validated_data.get('image')
         if image_file and not isinstance(image_file, str):
             upload_result = cloudinary.uploader.upload(image_file)
-            validated_data['image'] = upload_result.get('secure_url')
+            secure_url = upload_result.get('secure_url')
+            if not secure_url:
+                raise ValueError("Image upload failed. Cloudinary did not return a secure URL.")
+            validated_data['image'] = secure_url
 
         product=Product.objects.create(**validated_data)
         return product 
     except IntegrityError as e:
         raise ValueError(f"Database integrity error: {str(e)}")
+    except ValueError:
+        raise
     except Exception as e:
         raise Exception(f"An unexpected error occurred: {str(e)}")
     
@@ -139,10 +148,17 @@ def update_product(product_id: int, validated_data: dict) -> Product:
     try:
         product = Product.objects.get(id=product_id)
 
+        image_url = validated_data.pop('image_url', None)
+        if image_url:
+            validated_data['image'] = image_url
+
         image_file = validated_data.get('image')
         if image_file and not isinstance(image_file, str):
             upload_result = cloudinary.uploader.upload(image_file)
-            validated_data['image'] = upload_result.get('secure_url')
+            secure_url = upload_result.get('secure_url')
+            if not secure_url:
+                raise ValueError("Image upload failed. Cloudinary did not return a secure URL.")
+            validated_data['image'] = secure_url
 
         for field, value in validated_data.items():
             setattr(product, field, value)
@@ -153,6 +169,8 @@ def update_product(product_id: int, validated_data: dict) -> Product:
         raise LookupError(f"Product with ID {product_id} does not exist.")
     except IntegrityError as e:
         raise ValueError(f"Database error while updating product: {str(e)}")
+    except ValueError:
+        raise
     except Exception as e:
         raise Exception(f"An unexpected error occurred: {str(e)}")
 

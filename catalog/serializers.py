@@ -5,7 +5,7 @@ from .models import Category
 class CreateCategorySerializer(serializers.Serializer):
     name = serializers.CharField(max_length=50)
     slug = serializers.SlugField(max_length=80, required=False, allow_blank=True)
-    image = serializers.ImageField(required=False, allow_null=True)
+    image = serializers.FileField(required=False, allow_null=True)
     active = serializers.BooleanField(required=False)
 
 class ResponseCategorySerializer(serializers.Serializer):
@@ -18,7 +18,8 @@ class ResponseCategorySerializer(serializers.Serializer):
 class CreateProductSerializer(serializers.Serializer):
     name=serializers.CharField(max_length=40)
     slug=serializers.SlugField(max_length=80, required=False, allow_blank=True)
-    image=serializers.ImageField(required=True)
+    image=serializers.FileField(required=False, allow_null=True)
+    image_url = serializers.URLField(required=False, write_only=True)
     description = serializers.CharField()
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
     stock = serializers.IntegerField(default=0)
@@ -27,6 +28,11 @@ class CreateProductSerializer(serializers.Serializer):
     featured = serializers.BooleanField(required=False)
     active = serializers.BooleanField(required=False)
     category=serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
+
+    def validate(self, attrs):
+        if not attrs.get('image') and not attrs.get('image_url'):
+            raise serializers.ValidationError("Either image or image_url is required.")
+        return attrs
 
 
 class ResponseProductSerializer(serializers.Serializer):
